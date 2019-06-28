@@ -3,7 +3,7 @@
 import dlib
 import os
 
-WORK_DIR = "/LFS"
+WORK_DIR = "/LFS/facelib"
 MODEL_DIR = 'models'
 
 
