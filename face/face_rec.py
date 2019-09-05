@@ -2,7 +2,7 @@
 import os
 import numpy as np
 
-WORK_DIR = os.path.dirname(os.path.abspath(__file__))
+WORK_DIR = "/LFS/facelib" #os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = 'models'
 
 
