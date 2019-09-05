@@ -3,7 +3,7 @@
 import cv2
 import os
 
-WORK_DIR = os.path.dirname(os.path.abspath(__file__))
+WORK_DIR = "/LFS/facelib" #os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = 'models'
 
 
