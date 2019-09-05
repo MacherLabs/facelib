@@ -99,6 +99,7 @@ class FaceDetectorCNN(object):
     """A face detector based on dlib CNN model."""
     def __init__(self, model_loc=None):
         import dlib
+        dlib.cuda.set_device(0)
         if not model_loc:
             model_name = 'mmod_human_face_detector.dat'
             model_loc = os.path.join(WORK_DIR, MODEL_DIR, model_name)
