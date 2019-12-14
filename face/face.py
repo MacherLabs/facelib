@@ -41,7 +41,7 @@ class Face(object):
     """
     def __init__(self, detector_method='opencv', detector_model=None,
                  predictor_model='small', recognition_method='dlib',
-                 recognition_model=None):
+                 recognition_model=None,trt_enable=False,precision ='FP32'):
         if detector_method == 'dlib':
             from .detect_face import FaceDetectorDlib
             self._detector = FaceDetectorDlib()
@@ -53,7 +53,7 @@ class Face(object):
             self._detector = FaceDetectorYolo()
         elif detector_method == 'mobilenet':
             from .detect_face import FaceDetectorMobilenet
-            self._detector = FaceDetectorMobilenet()
+            self._detector = FaceDetectorMobilenet(trt_enable=trt_enable,precision =precision)
         else:
             from .detect_face import FaceDetectorOpenCV
             self._detector = FaceDetectorOpenCV(detector_model)
