@@ -156,18 +156,33 @@ class FaceDetectorYolo(object):
         return out_list
 
 class FaceDetectorMobilenet(object):
-    def __init__(self, model_name='frozen_inference_graph_face.pb'):
+    def __init__(self, model_name='frozen_inference_graph_face.pb',trt_enable=False,precision ='FP32'):
         import tensorflow as tf
         import numpy as np
+        import tensorflow.contrib.tensorrt as trt
+        import cv2
+        
         model_loc = os.path.join(WORK_DIR, MODEL_DIR, model_name)
         self.detection_graph = tf.Graph()
+        
         with self.detection_graph.as_default():
             od_graph_def = tf.GraphDef()
             with tf.gfile.GFile(model_loc, 'rb') as fid:
                 serialized_graph = fid.read()
                 od_graph_def.ParseFromString(serialized_graph)
-                tf.import_graph_def(od_graph_def, name='')
+                # Convert to tensorrt graph if asked
+                if trt_enable == True:
+                    trt_graph_def=trt.create_inference_graph(input_graph_def= od_graph_def,
+                                                max_batch_size=1,
+                                                max_workspace_size_bytes=1<<25,
+                                                precision_mode=precision,
+                                                minimum_segment_size=5,
+                                                maximum_cached_engines=5,
+                                                outputs=['detection_boxes','detection_scores','detection_classes','num_detections'])
 
+                    tf.import_graph_def(trt_graph_def, name='')
+                else:
+                    tf.import_graph_def(od_graph_def, name='')
 
         with self.detection_graph.as_default():
             config = tf.ConfigProto()
