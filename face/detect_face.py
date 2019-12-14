@@ -2,6 +2,7 @@
 
 import cv2
 import os
+import numpy as np
 
 WORK_DIR = "/LFS/facelib" #os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = 'models'
@@ -158,13 +159,10 @@ class FaceDetectorYolo(object):
 class FaceDetectorMobilenet(object):
     def __init__(self, model_name='frozen_inference_graph_face.pb',trt_enable=False,precision ='FP32'):
         import tensorflow as tf
-        import numpy as np
         import tensorflow.contrib.tensorrt as trt
-        import cv2
-        
         model_loc = os.path.join(WORK_DIR, MODEL_DIR, model_name)
         self.detection_graph = tf.Graph()
-        
+
         with self.detection_graph.as_default():
             od_graph_def = tf.GraphDef()
             with tf.gfile.GFile(model_loc, 'rb') as fid:
