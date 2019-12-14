@@ -157,7 +157,7 @@ class FaceDetectorYolo(object):
         return out_list
 
 class FaceDetectorMobilenet(object):
-    def __init__(self, model_name='frozen_inference_graph_face.pb',trt_enable=False,precision ='FP32'):
+    def __init__(self, model_name='frozen_inference_graph_face.pb',trt_enable=False,precision ='FP32',gpu_frac=0.3):
         import tensorflow as tf
         import tensorflow.contrib.tensorrt as trt
         model_loc = os.path.join(WORK_DIR, MODEL_DIR, model_name)
@@ -184,7 +184,8 @@ class FaceDetectorMobilenet(object):
 
         with self.detection_graph.as_default():
             config = tf.ConfigProto()
-            config.gpu_options.allow_growth = True
+            #config.gpu_options.allow_growth = True
+            config.gpu_options.per_process_gpu_memory_fraction = gpu_frac
             self.sess = tf.Session(graph=self.detection_graph, config=config)
             self.windowNotSet = True
 
