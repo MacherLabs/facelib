@@ -155,6 +155,86 @@ class FaceDetectorYolo(object):
             out_list.append(formatted_res)
         return out_list
 
+class FaceDetectorMobilenet(object):
+    def __init__(self, model_name='frozen_inference_graph_face.pb'):
+        import tensorflow as tf
+        import numpy as np
+        model_loc = os.path.join(WORK_DIR, MODEL_DIR, model_name)
+        self.detection_graph = tf.Graph()
+        with self.detection_graph.as_default():
+            od_graph_def = tf.GraphDef()
+            with tf.gfile.GFile(model_loc, 'rb') as fid:
+                serialized_graph = fid.read()
+                od_graph_def.ParseFromString(serialized_graph)
+                tf.import_graph_def(od_graph_def, name='')
+
+
+        with self.detection_graph.as_default():
+            config = tf.ConfigProto()
+            config.gpu_options.allow_growth = True
+            self.sess = tf.Session(graph=self.detection_graph, config=config)
+            self.windowNotSet = True
+
+
+    def run(self, image):
+        """image: bgr image
+        return (boxes, scores, classes, num_detections)
+        """
+        image_np = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        # the array based representation of the image will be used later in order to prepare the
+        # result image with boxes and labels on it.
+        # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
+        image_np_expanded = np.expand_dims(image_np, axis=0)
+        image_tensor = self.detection_graph.get_tensor_by_name('image_tensor:0')
+        # Each box represents a part of the image where a particular object was detected.
+        boxes = self.detection_graph.get_tensor_by_name('detection_boxes:0')
+        # Each score represent how level of confidence for each of the objects.
+        # Score is shown on the result image, together with the class label.
+        scores = self.detection_graph.get_tensor_by_name('detection_scores:0')
+        classes = self.detection_graph.get_tensor_by_name('detection_classes:0')
+        num_detections = self.detection_graph.get_tensor_by_name('num_detections:0')
+        # Actual detection.
+        #start_time = time.time()
+        (boxes, scores, classes, num_detections) = self.sess.run(
+            [boxes, scores, classes, num_detections],
+            feed_dict={image_tensor: image_np_expanded})
+        #elapsed_time = time.time() - start_time
+        #print('inference time cost: {}'.format(elapsed_time))
+
+        return (boxes, scores, classes, num_detections)
+
+    def detect_raw(self, imgcv, **kwargs):
+        return self.run(imgcv)
+
+    def detect(self, imgcv, **kwargs):
+        threshold = kwargs.get('threshold', 0.7)
+        faces = self.detect_raw(imgcv, **kwargs)
+        im_height,im_width,_ = imgcv.shape
+        return self._format_result(faces,threshold,im_width,im_height)
+
+    # Format the results
+    def _format_result(self, result,threshold,im_width,im_height):
+        out_list = []
+        boxes,scores,classes,num_detections = result
+        indexes = np.squeeze(np.argwhere(scores[0]>threshold),axis=1)
+        print("indexes",indexes)
+        for index_face in indexes:
+            box = boxes[0][index_face]
+            ymin, xmin, ymax, xmax = box[0],box[1],box[2],box[3]
+            (left, right, top, bottom) = (xmin * im_width, xmax * im_width,
+                                  ymin * im_height, ymax * im_height)
+            prob = scores[0][index_face]
+            if prob> threshold:
+                formatted_res = dict()
+                formatted_res["class"] = 'face'
+                formatted_res["prob"] = prob
+                formatted_res["box"] = {
+                    "topleft": {'x': int(left), 'y': int(top)},
+                    "bottomright": {'x': int(right), 'y': int(bottom)}
+                    }
+                out_list.append(formatted_res)
+        #Return the result
+        return out_list
 
 if __name__ == '__main__':
     import sys
