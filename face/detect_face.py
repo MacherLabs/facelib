@@ -230,7 +230,7 @@ class FaceDetectorMobilenet(object):
         out_list = []
         boxes,scores,classes,num_detections = result
         indexes = np.squeeze(np.argwhere(scores[0]>threshold),axis=1)
-        print("indexes",indexes)
+        #print("indexes",indexes)
         for index_face in indexes:
             box = boxes[0][index_face]
             ymin, xmin, ymax, xmax = box[0],box[1],box[2],box[3]
