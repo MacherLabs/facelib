@@ -157,7 +157,7 @@ class FaceDetectorYolo(object):
         return out_list
 
 class FaceDetectorMobilenet(object):
-    def __init__(self, model_name='frozen_inference_graph_face.pb',trt_enable=False,precision ='FP32',gpu_frac=0.3):
+    def __init__(self, model_name='mobilenet_512_frozen_inference_graph_face.pb',trt_enable=False,precision ='FP32',gpu_frac=0.3):
         import tensorflow as tf
         import tensorflow.contrib.tensorrt as trt
         model_loc = os.path.join(WORK_DIR, MODEL_DIR, model_name)
