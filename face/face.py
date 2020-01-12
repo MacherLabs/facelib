@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
-import dlib
+try:
+    import dlib
+except:
+    pass
 import os
 
 WORK_DIR = "/LFS/facelib"
