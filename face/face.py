@@ -56,7 +56,7 @@ class Face(object):
             self._detector = FaceDetectorYolo()
         elif detector_method == 'mobilenet':
             from .detect_face import FaceDetectorMobilenet
-            self._detector = FaceDetectorMobilenet(trt_enable=trt_enable,precision =precision,gpu_frac=gpu_frac)
+            self._detector = FaceDetectorMobilenet(model_name=detector_model,trt_enable=trt_enable,precision =precision,gpu_frac=gpu_frac)
         else:
             from .detect_face import FaceDetectorOpenCV
             self._detector = FaceDetectorOpenCV(detector_model)

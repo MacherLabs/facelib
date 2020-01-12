@@ -172,7 +172,7 @@ class FaceDetectorMobilenet(object):
                 if trt_enable == True:
                     trt_graph_def=trt.create_inference_graph(input_graph_def= od_graph_def,
                                                 max_batch_size=1,
-                                                max_workspace_size_bytes=1<<25,
+                                                max_workspace_size_bytes=1<<20,
                                                 precision_mode=precision,
                                                 minimum_segment_size=5,
                                                 maximum_cached_engines=5,
@@ -184,8 +184,10 @@ class FaceDetectorMobilenet(object):
 
         with self.detection_graph.as_default():
             config = tf.ConfigProto()
-            #config.gpu_options.allow_growth = True
-            config.gpu_options.per_process_gpu_memory_fraction = gpu_frac
+            if trt_enable == True:
+                config.gpu_options.allow_growth = True
+            else:
+                config.gpu_options.per_process_gpu_memory_fraction = gpu_frac
             self.sess = tf.Session(graph=self.detection_graph, config=config)
             self.windowNotSet = True
 
