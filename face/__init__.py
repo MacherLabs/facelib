@@ -1,1 +1,1 @@
-from face import Face
+from .face import Face

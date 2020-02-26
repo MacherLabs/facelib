@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
-import dlib
+try:
+    import dlib
+except:
+    pass
 import os
 
 WORK_DIR = "/LFS/facelib"
@@ -36,11 +39,12 @@ class Face(object):
     Methods:
         detect()
             imgcv = grayscale or colored numpy image
-            kwargs = optional argumentts for some algorithms e.g. upsamples=1
+            kwargs = optional argumentts for some algorithms e.g. upsamples=1 for dlib,
+            threshold =0.7 for mobilenet
     """
     def __init__(self, detector_method='opencv', detector_model=None,
                  predictor_model='small', recognition_method='dlib',
-                 recognition_model=None):
+                 recognition_model=None,trt_enable=False,precision ='FP32',gpu_frac=0.3):
         if detector_method == 'dlib':
             from .detect_face import FaceDetectorDlib
             self._detector = FaceDetectorDlib()
@@ -50,6 +54,9 @@ class Face(object):
         elif detector_method == 'yolo':
             from .detect_face import FaceDetectorYolo
             self._detector = FaceDetectorYolo()
+        elif detector_method == 'mobilenet':
+            from .detect_face import FaceDetectorMobilenet
+            self._detector = FaceDetectorMobilenet(model_name=detector_model,trt_enable=trt_enable,precision =precision,gpu_frac=gpu_frac)
         else:
             from .detect_face import FaceDetectorOpenCV
             self._detector = FaceDetectorOpenCV(detector_model)

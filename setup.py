@@ -18,6 +18,6 @@ setup(
         'face': ['models/*'],
     },
 
-    install_requires=['numpy', 'dlib'],
+    install_requires=['numpy'],
     zip_safe=False
     )
