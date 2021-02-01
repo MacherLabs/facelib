@@ -77,7 +77,7 @@ class FaceRecFacenet(object):
                 return np.empty((0))
             return np.linalg.norm(face_encodings - face_encodings_to_compare, axis=1)
         elif method == "dotproduct":
-            ans = np.sum(face_encodings*face_encodings_to_compare)
+            ans = np.sum(face_encodings*face_encodings_to_compare, axis=1)
             return ans
         else:
             print("No method specified for comparison!")
@@ -118,3 +118,15 @@ class FaceRecDlib(object):
         if len(face_encodings) == 0:
             return np.empty((0))
         return np.linalg.norm(face_encodings - face_to_compare, axis=1)
+
+    def face_similarity(self, face_encodings, face_encodings_to_compare, method="distance"):
+        if method=="distance":
+            if len(face_encodings) == 0:
+                return np.empty((0))
+            return np.linalg.norm(face_encodings - face_encodings_to_compare, axis=1)
+        elif method == "dotproduct":
+            ans = np.sum(face_encodings*face_encodings_to_compare, axis=1)
+            return ans
+        else:
+            print("No method specified for comparison!")
+    

@@ -108,6 +108,9 @@ class Face(object):
     def get_distance(self, face_encodings, face_to_compare):
         return self._recognizer.face_distance(face_encodings, face_to_compare)
 
+    def get_similarity(self, face_encodings, face_to_compare, method="distance"):
+        return self._recognizer.face_similarity(face_encodings, face_to_compare, method=method)
+
     def compare(self, face_image1, face_image2, tolerance=0.6):
         face1 = self.detect_largest(face_image1)
         face2 = self.detect_largest(face_image2)
