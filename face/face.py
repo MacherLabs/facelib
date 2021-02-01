@@ -45,6 +45,8 @@ class Face(object):
     def __init__(self, detector_method='opencv', detector_model=None,
                  predictor_model='small', recognition_method='dlib',
                  recognition_model=None,trt_enable=False,precision ='FP32',gpu_frac=0.3):
+        self.detector_method = detector_method
+        self.recognition_method = recognition_method
         if detector_method == 'dlib':
             from .detect_face import FaceDetectorDlib
             self._detector = FaceDetectorDlib()
@@ -73,6 +75,9 @@ class Face(object):
         if recognition_method == 'dlib':
             from .face_rec import FaceRecDlib
             self._recognizer = FaceRecDlib(recognition_model)
+        elif recognition_method == "facenet":
+            from .face_rec import FaceRecFacenet
+            self._recognizer = FaceRecFacenet()
 
     def detect(self, imgcv, **kwargs):
         return self._detector.detect(imgcv, **kwargs)
@@ -93,9 +98,12 @@ class Face(object):
         # print(len(face_locations))
         return [self._predictor(imgcv, face_location) for face_location in face_locations]
 
-    def get_encodings(self, imgcv, landmarks, **kwargs):
-        num_samples = kwargs.get('num_samples', 1)
-        return self._recognizer.face_encodings(imgcv, landmarks, num_samples)
+    def get_encodings(self, imgcv, landmarks=None, **kwargs):
+        if self.recognition_method == "dlib":
+            num_samples = kwargs.get('num_samples', 1)
+            return self._recognizer.face_encodings(imgcv, landmarks, num_samples)
+        elif self.recognition_method == "facenet":
+            return self._recognizer.face_encodings(imgcv)
 
     def get_distance(self, face_encodings, face_to_compare):
         return self._recognizer.face_distance(face_encodings, face_to_compare)
