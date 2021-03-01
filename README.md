@@ -51,5 +51,5 @@ pip install --user git+ssh://git@bitbucket.org/macherlabs/facelib.git
              recognition_method=None ,
              gpu_frac=0.3,
              trt_enable=False,# converts graph to tensorrt optimized graph
-             precision='FP16' # Defalut 'FP32', use 'FP16'only if gpu support is available
+             precision='FP16' # Defalut 'FP32', use 'FP16' only if gpu support is available
              )
