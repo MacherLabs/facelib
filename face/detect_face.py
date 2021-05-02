@@ -4,6 +4,10 @@ import cv2
 import os
 import numpy as np
 
+import logging
+logger = logging.getLogger(__name__)
+logger.debug("Loaded " + __name__)
+
 WORK_DIR = "/LFS/facelib" #os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = 'models'
 
@@ -162,7 +166,17 @@ class FaceDetectorMobilenet(object):
         import tensorflow.contrib.tensorrt as trt
         if model_name==None:
             model_name='mobilenet_512_frozen_inference_graph_face.pb'
+            
         model_loc = os.path.join(WORK_DIR, MODEL_DIR, model_name)
+        
+        if trt_enable ==True:
+            trt_loc="{}_{}_{}".format("trt","precision",model_loc)
+            
+            logger.info("tensorrt graph location-{}".format(trt_loc))
+            if os.path.isfile(trt_loc):
+                logger.info("found converted trt graph..no conversion needed")
+                model_loc=trt_loc
+                
         self.detection_graph = tf.Graph()
 
         with self.detection_graph.as_default():
@@ -171,7 +185,8 @@ class FaceDetectorMobilenet(object):
                 serialized_graph = fid.read()
                 od_graph_def.ParseFromString(serialized_graph)
                 # Convert to tensorrt graph if asked
-                if trt_enable == True:
+                if trt_enable == True and model_loc != trt_loc:
+                    logger.info("converting to trt-graph,please wait..")
                     trt_graph_def=trt.create_inference_graph(input_graph_def= od_graph_def,
                                                 max_batch_size=1,
                                                 max_workspace_size_bytes=1<<20,
@@ -179,17 +194,21 @@ class FaceDetectorMobilenet(object):
                                                 minimum_segment_size=5,
                                                 maximum_cached_engines=5,
                                                 outputs=['detection_boxes','detection_scores','detection_classes','num_detections'])
-
+                    logger.info("conversion to trt graph completed")
+                    with tf.gfile.GFile(trt_loc, "wb") as f:
+                        f.write(trt_graph_def.SerializeToString())
+                    logger.info("saved trt graph to {}".format(trt_loc))
+                        
                     tf.import_graph_def(trt_graph_def, name='')
                 else:
                     tf.import_graph_def(od_graph_def, name='')
 
         with self.detection_graph.as_default():
             config = tf.ConfigProto()
-            # if trt_enable == True:
-            #     config.gpu_options.allow_growth = True
-            # else:
-            config.gpu_options.per_process_gpu_memory_fraction = gpu_frac
+            if gpu_frac == 0:
+                config.gpu_options.allow_growth = True
+            else:
+                config.gpu_options.per_process_gpu_memory_fraction = gpu_frac
             self.sess = tf.Session(graph=self.detection_graph, config=config)
             self.windowNotSet = True
 
