@@ -170,7 +170,8 @@ class FaceDetectorMobilenet(object):
         model_loc = os.path.join(WORK_DIR, MODEL_DIR, model_name)
         
         if trt_enable ==True:
-            trt_loc="{}_{}_{}".format("trt","precision",model_loc)
+            trt_model_name="{}_{}_{}".format("trt",precision,model_name)
+            trt_loc=os.path.join(WORK_DIR, MODEL_DIR, trt_model_name)
             
             logger.info("tensorrt graph location-{}".format(trt_loc))
             if os.path.isfile(trt_loc):
