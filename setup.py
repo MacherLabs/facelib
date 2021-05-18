@@ -18,6 +18,6 @@ setup(
         'face': ['models/*'],
     },
 
-    install_requires=['numpy'],
+    install_requires=['numpy','common @ git+https://github.com/MacherLabs/common.git'],
     zip_safe=False
     )
