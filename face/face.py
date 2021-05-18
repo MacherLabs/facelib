@@ -42,9 +42,17 @@ class Face(object):
             kwargs = optional argumentts for some algorithms e.g. upsamples=1 for dlib,
             threshold =0.7 for mobilenet
     """
-    def __init__(self, detector_method='opencv', detector_model=None,
-                 predictor_model='small', recognition_method='dlib',
-                 recognition_model=None,trt_enable=False,precision ='FP32',gpu_frac=0.3):
+    def __init__(self, detector_method='opencv', 
+                 detector_model=None,
+                 predictor_model='small', 
+                 recognition_method='dlib',
+                 recognition_model=None,
+                 trt_enable=False,
+                 precision ='FP32',
+                 gpu_frac=0.3,
+                 det_server_config={},
+                 recog_server_config={}):
+        
         self.detector_method = detector_method
         self.recognition_method = recognition_method
         if detector_method == 'dlib':
@@ -59,18 +67,23 @@ class Face(object):
         elif detector_method == 'mobilenet':
             from .detect_face import FaceDetectorMobilenet
             self._detector = FaceDetectorMobilenet(model_name=detector_model,trt_enable=trt_enable,precision =precision,gpu_frac=gpu_frac)
+        elif detector_method == 'server':
+            from common import detectorClient
+            self._detector = detectorClient(det_server_config)
         else:
             from .detect_face import FaceDetectorOpenCV
             self._detector = FaceDetectorOpenCV(detector_model)
 
-        if predictor_model == 'large':
-            pose_predictor = os.path.join(
-                WORK_DIR, MODEL_DIR, 'shape_predictor_68_face_landmarks.dat')
-        elif predictor_model == 'small':
-            pose_predictor = os.path.join(
-                WORK_DIR, MODEL_DIR, 'shape_predictor_5_face_landmarks.dat')
-        if predictor_model is not None:
-            self._predictor = dlib.shape_predictor(pose_predictor)
+        
+        if not recognition_method=='server':
+            if predictor_model == 'large':
+                pose_predictor = os.path.join(
+                    WORK_DIR, MODEL_DIR, 'shape_predictor_68_face_landmarks.dat')
+            elif predictor_model == 'small':
+                pose_predictor = os.path.join(
+                    WORK_DIR, MODEL_DIR, 'shape_predictor_5_face_landmarks.dat')
+            if predictor_model is not None:
+                self._predictor = dlib.shape_predictor(pose_predictor)
 
         if recognition_method == 'dlib':
             from .face_rec import FaceRecDlib
@@ -78,6 +91,10 @@ class Face(object):
         elif recognition_method == "facenet":
             from .face_rec import FaceRecFacenet
             self._recognizer = FaceRecFacenet()
+        elif recognition_method == "server":
+            from common import insightFaceClient
+            self._recognizer = insightFaceClient.recognizerClient(recog_server_config)
+            
 
     def detect(self, imgcv, **kwargs):
         return self._detector.detect(imgcv, **kwargs)
@@ -104,6 +121,8 @@ class Face(object):
             return self._recognizer.face_encodings(imgcv, landmarks, num_samples)
         elif self.recognition_method == "facenet":
             return self._recognizer.face_encodings(imgcv)
+        elif self.recognition_method == "server":
+            return self._recognizer.face_encodings(imgcv)
 
     def get_distance(self, face_encodings, face_to_compare):
         return self._recognizer.face_distance(face_encodings, face_to_compare)
@@ -112,6 +131,10 @@ class Face(object):
         return self._recognizer.face_similarity(face_encodings, face_to_compare, method=method)
 
     def compare(self, face_image1, face_image2, tolerance=0.6):
+        
+        if self.recognition_method=='server':
+            return self._recognizer.compare(face_image1,face_image2)
+        
         face1 = self.detect_largest(face_image1)
         face2 = self.detect_largest(face_image2)
         results = {
@@ -136,7 +159,7 @@ if __name__ == '__main__':
     import cv2
     import pprint
 
-    facedemo = Face(detector_method='dlib')
+    facedemo = Face(detector_method='server',recognition_method='server')
     if len(sys.argv) < 3:
         print("Give two images as arguments")
     else:
