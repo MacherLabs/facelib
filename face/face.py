@@ -45,7 +45,7 @@ class Face(object):
     def __init__(self, detector_method='opencv', 
                  detector_model=None,
                  predictor_model='small', 
-                 recognition_method='dlib',
+                 recognition_method=None,
                  recognition_model=None,
                  trt_enable=False,
                  precision ='FP32',
@@ -75,8 +75,7 @@ class Face(object):
             self._detector = FaceDetectorOpenCV(detector_model)
 
         
-        if not recognition_method=='server':
-            import dlib
+        if recognition_method=='dlib':
             if predictor_model == 'large':
                 pose_predictor = os.path.join(
                     WORK_DIR, MODEL_DIR, 'shape_predictor_68_face_landmarks.dat')
