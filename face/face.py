@@ -76,6 +76,7 @@ class Face(object):
 
         
         if not recognition_method=='server':
+            import dlib
             if predictor_model == 'large':
                 pose_predictor = os.path.join(
                     WORK_DIR, MODEL_DIR, 'shape_predictor_68_face_landmarks.dat')
