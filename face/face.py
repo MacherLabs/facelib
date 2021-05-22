@@ -74,16 +74,14 @@ class Face(object):
             from .detect_face import FaceDetectorOpenCV
             self._detector = FaceDetectorOpenCV(detector_model)
 
-        
-        if recognition_method=='dlib':
-            if predictor_model == 'large':
-                pose_predictor = os.path.join(
-                    WORK_DIR, MODEL_DIR, 'shape_predictor_68_face_landmarks.dat')
-            elif predictor_model == 'small':
-                pose_predictor = os.path.join(
-                    WORK_DIR, MODEL_DIR, 'shape_predictor_5_face_landmarks.dat')
-            if predictor_model is not None:
-                self._predictor = dlib.shape_predictor(pose_predictor)
+        if predictor_model == 'large':
+            pose_predictor = os.path.join(
+                WORK_DIR, MODEL_DIR, 'shape_predictor_68_face_landmarks.dat')
+        elif predictor_model == 'small':
+            pose_predictor = os.path.join(
+                WORK_DIR, MODEL_DIR, 'shape_predictor_5_face_landmarks.dat')
+        if predictor_model is not None:
+            self._predictor = dlib.shape_predictor(pose_predictor)
 
         if recognition_method == 'dlib':
             from .face_rec import FaceRecDlib
@@ -118,6 +116,9 @@ class Face(object):
     def get_encodings(self, imgcv, landmarks=None, **kwargs):
         if self.recognition_method == "dlib":
             num_samples = kwargs.get('num_samples', 1)
+            if landmarks is None:
+                face_locations= kwargs.get('face_locations',None)
+                landmarks=self.get_landmarks(imgcv,face_locations)
             return self._recognizer.face_encodings(imgcv, landmarks, num_samples)
         elif self.recognition_method == "facenet":
             return self._recognizer.face_encodings(imgcv)
