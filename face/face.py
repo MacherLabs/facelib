@@ -154,7 +154,12 @@ class Face(object):
                                              dist < 2*tolerance else 0.0)
         return results
 
-
+    def get_characteristics(self,imgcv):
+        op = getattr(self._recognizer, "face_characteristics", None)
+        if op and callable(op):
+            return self._recognizer.face_characteristics(imgcv)
+        return []
+        
 if __name__ == '__main__':
     import sys
     import cv2
@@ -173,6 +178,7 @@ if __name__ == '__main__':
     if imgcv1 is not None and imgcv2 is not None:
         results = facedemo.compare(imgcv1, imgcv2)
         pprint.pprint(results)
+        print(facedemo.get_characteristics(imgcv1))
         cv2.imshow('Face1', imgcv1)
         cv2.imshow('Face2', imgcv2)
         cv2.waitKey(0)
